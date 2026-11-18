@@ -1,0 +1,16 @@
+# Ignorar todo por defecto
+*
+
+# Permitir el propio .gitignore, carpetas y archivos de código Python
+!.gitignore
+!*/
+!*.py
+
+# Excluir carpetas internas de Python, entornos virtuales y editores aunque sean directorios
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.vscode/
+.idea/

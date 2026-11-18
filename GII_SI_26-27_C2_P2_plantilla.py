@@ -16,7 +16,7 @@ from keras.callbacks import EarlyStopping
 # FUNCIONES PARA HACER LAS GRÁFICAS
 #
 
-def plot_history(history, title=None, show=True, save_file_name=None):
+def plot_history(history, title=None, show=False, save_file_name=None):
     '''
         * history: el objeto history que devuelve model.fit()
         * title: texto para el título de la figura
@@ -60,7 +60,7 @@ def plot_history(history, title=None, show=True, save_file_name=None):
     plt.close()
 
 
-def plot_grouped_bars(results, errors, xlabels, title, y1log=False, y2log=False, show=True, save_file_name=None):
+def plot_grouped_bars(results, errors, xlabels, title, y1log=False, y2log=False, show=False, save_file_name=None):
     '''
         * results: lista con los valores (medios) de accuracy y tiempo
         * errors: lista con los márgenes de error (max-media y media-min) de accuracy y tiempo
@@ -134,7 +134,7 @@ def defntest_model(x_train, y_train, x_test, y_test, batch_size=128, verbose=Tru
                    layers=[("Flaten",), ("Dense", 128), ("sigmoid", ), ("Dense", 64, ), ("sigmoid", ), ],
                    scaling=[0, 1], kernel_initializer="glorot_uniform",
                    epochs=50, learning_rate=0.001, patience=0, repetitions=1,
-                   model_file_name=None, fig_file_name=None, show_fig=True, label=None):
+                   model_file_name=None, fig_file_name=None, show_fig=False, label=None):
     '''
     El parámetro layers es una lista con una tupla para cada capa
     Realiza [repetitions] entrenamientos independientes (modelos creados de cero)
@@ -192,7 +192,7 @@ def defntest_model(x_train, y_train, x_test, y_test, batch_size=128, verbose=Tru
 
         callbacks = []
         if patience>0:
-            callbacks.append([EarlyStopping(monitor='val_accuracy', patience=patience, restore_best_weights=True)])
+            callbacks.append(EarlyStopping(monitor='val_accuracy', patience=patience, restore_best_weights=True))
 
         start = time.time()
         history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs,
@@ -274,7 +274,7 @@ def train_many_and_plot(x_train, y_train, x_test, y_test, configs, repetitions=1
         'time': [ np.array(avgs_t) - np.array(mins_t), np.array(maxs_t) - np.array(avgs_t) ]
     }
 
-    plot_grouped_bars(results, errors, xlabels, title, show=True, save_file_name=save_file_name)
+    plot_grouped_bars(results, errors, xlabels, title, show=False, save_file_name=save_file_name)
 
 
 #
@@ -285,7 +285,7 @@ def ejercicio1(x_train, y_train, x_test, y_test):
 
     defntest_model(x_train, y_train, x_test, y_test, epochs=100,
                    layers=[("Flaten",), ("Dense", 128), ("sigmoid", ), ("Dense", 64, ), ("sigmoid", ), ],
-                   fig_file_name="128+64_Sigm_EP100.pdf")
+                   fig_file_name="128+64_Sigm_EP100.pdf",repetitions=3)
 
 
 def ejercicio2(x_train, y_train, x_test, y_test):
@@ -298,8 +298,20 @@ def ejercicio2(x_train, y_train, x_test, y_test):
             "batch_size": 16,
             "learning_rate": 0.001,
             "label": "BS 16",
+            "epochs":55,
             "fig_file_name": "2x128_Sigm_BS16.pdf",
         },
+        {
+            "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
+            "scaling": [0, 1],
+            "kernel_initializer": "glorot_uniform",
+            "batch_size": 64,
+            "learning_rate": 0.001,
+            "label": "BS 64",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_BS64.pdf",
+        },
+
         {
             "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
             "scaling": [0, 1],
@@ -307,7 +319,28 @@ def ejercicio2(x_train, y_train, x_test, y_test):
             "batch_size": 128,
             "learning_rate": 0.001,
             "label": "BS 128",
+            "epochs":55,
             "fig_file_name": "2x128_Sigm_BS128.pdf",
+        },
+        {
+            "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
+            "scaling": [0, 1],
+            "kernel_initializer": "glorot_uniform",
+            "batch_size": 256,
+            "learning_rate": 0.001,
+            "label": "BS 256",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_BS256.pdf",
+        },
+        {
+            "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
+            "scaling": [0, 1],
+            "kernel_initializer": "glorot_uniform",
+            "batch_size": 512,
+            "learning_rate": 0.001,
+            "label": "BS 512",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_BS512.pdf",
         },
         {
             "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
@@ -316,11 +349,12 @@ def ejercicio2(x_train, y_train, x_test, y_test):
             "batch_size": 1024,
             "learning_rate": 0.001,
             "label": "BS 1024",
+            "epochs":55,
             "fig_file_name": "2x128_Sigm_BS1024.pdf",
         },
     ]
     train_many_and_plot(x_train, y_train, x_test, y_test, configs, title="2x128 Sigmoid, variando BS",
-                              save_file_name="comp_2x128_Sigm_BS.pdf")
+                              save_file_name="comp_2x128_Sigm_BS.pdf",repetitions=3)
 
     configs = [
         {
@@ -328,9 +362,20 @@ def ejercicio2(x_train, y_train, x_test, y_test):
             "scaling": [0, 1],
             "kernel_initializer": "glorot_uniform",
             "batch_size": 256,
-            "learning_rate": 0.05,
-            "label": "LR 0.05",
-            "fig_file_name": "2x128_Sigm_LR05.pdf",
+            "learning_rate": 0.01,
+            "label": "LR 0.01",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_LR01.pdf",
+        },
+        {
+            "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
+            "scaling": [0, 1],
+            "kernel_initializer": "glorot_uniform",
+            "batch_size": 256,
+            "learning_rate": 0.003,
+            "label": "LR 0.003",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_LR003.pdf",
         },
         {
             "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
@@ -339,6 +384,7 @@ def ejercicio2(x_train, y_train, x_test, y_test):
             "batch_size": 256,
             "learning_rate": 0.001,
             "label": "LR 0.001",
+            "epochs":55,
             "fig_file_name": "2x128_Sigm_LR001.pdf",
         },
         {
@@ -346,24 +392,75 @@ def ejercicio2(x_train, y_train, x_test, y_test):
             "scaling": [0, 1],
             "kernel_initializer": "glorot_uniform",
             "batch_size": 256,
-            "learning_rate": 0.00002,
-            "label": "LR 0.00002",
-            "fig_file_name": "2x128_Sigm_LR00002.pdf",
+            "learning_rate": 0.00003,
+            "label": "LR 0.00003",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_LR00003.pdf",
+        },
+        {
+            "layers": [("Flaten", ), ("Dense", 128), ("sigmoid", ), ("Dense", 128), ("sigmoid", )],
+            "scaling": [0, 1],
+            "kernel_initializer": "glorot_uniform",
+            "batch_size": 256,
+            "learning_rate": 0.00001,
+            "label": "LR 0.00001",
+            "epochs":55,
+            "fig_file_name": "2x128_Sigm_LR00001.pdf",
         },
     ]
     train_many_and_plot(x_train, y_train, x_test, y_test, configs, title="2x128 Sigmoid, variando LR",
-                              save_file_name="comp_2x128_Sigm_LR.pdf")
+                              save_file_name="comp_2x128_Sigm_LR.pdf",repetitions=3)
 
+#Funcion para construir lauers
+def construir_capas(num_capas, activacion, neuronas=128):
+    layers =[("Flaten",)]
+    for _ in range(num_capas):
+        layers.append(("Dense", neuronas))
+        layers.append((activacion,))
+    return layers
+
+def ejercicio3(x_train, y_train, x_test, y_test):
+
+    activaciones = [
+        ("sigmoid", "glorot_normal", [0, 1]),
+        ("tanh", "glorot_normal", [-1, 1]),
+        ("relu", "he_normal",     [-2, 2]),
+        ("gelu", "he_normal",     [-2, 2]),
+        ("selu", "lecun_normal",  [-2, 2]),
+    ]
+
+    for num_capas in [2,4,8]:
+        configs=[] #una configuracion por cada tipo de capa
+
+        for nombre, inicializador, escalado in activaciones:
+            configs.append({
+                "layers": construir_capas(num_capas,nombre),
+                "scaling": escalado,
+                "kernel_initializer" : inicializador,
+                "batch_size" : 512,
+                "learning_rate": 0.001,
+                "epochs" : 100,
+                "patience" : 10,
+                "label" : nombre,
+                "fig_file_name": f"{num_capas}x128_{nombre}.pdf",
+            })
+
+    
+    
+
+        train_many_and_plot(x_train, y_train, x_test, y_test, configs, title=f"{num_capas}x128 Diferntes activaciones",
+                                        save_file_name=f"comp_{num_capas}x128_Activaciones.pdf",repetitions=3)
 
 
 if __name__ == "__main__":
 
     (x_train, y_train), (x_test, y_test) = load_cifar10()
 
-    ejercicio1(x_train, y_train, x_test, y_test)
+    #ejercicio1(x_train, y_train, x_test, y_test)
     # El primer ejercicio experimenta con un solo modelo de características fijas
     # por lo que la parte de experimentación está completa con el código de ejercicio1()
     # Sin embargo, ejercicio2() es solo una sugerencia de lo que se puede probar
     # y los modelos que prueba son ilustrativos de los que se pueden explorar
     #ejercicio2(x_train, y_train, x_test, y_test)
+    ejercicio3(x_train, y_train, x_test, y_test)
 
