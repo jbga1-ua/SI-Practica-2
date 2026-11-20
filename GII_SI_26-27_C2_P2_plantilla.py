@@ -428,6 +428,16 @@ def construir_capas_BN(num_capas, activacion, neuronas=128):
         layers.append((activacion,))
     return layers
 
+def construir_capas_DO(num_capas, activacion,tasa_do, neuronas=128, usar_bn=False):
+    layers =[("Flaten",)]
+    for i in range(num_capas):
+        layers.append(("Dense", neuronas))
+        if usar_bn and (i+1 < num_capas):
+            layers.append(("BN",))
+        layers.append((activacion,))
+        layers.append(
+    return layers 
+
 def ejercicio3(x_train, y_train, x_test, y_test):
 
     activaciones = [
