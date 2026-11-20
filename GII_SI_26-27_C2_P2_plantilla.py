@@ -285,7 +285,7 @@ def ejercicio1(x_train, y_train, x_test, y_test):
 
     defntest_model(x_train, y_train, x_test, y_test, epochs=100,
                    layers=[("Flaten",), ("Dense", 128), ("sigmoid", ), ("Dense", 64, ), ("sigmoid", ), ],
-                   fig_file_name="128+64_Sigm_EP100.pdf",repetitions=3)
+                   fig_file_name="128+64_Sigm_EP100.pdf",repetitions=1)
 
 
 def ejercicio2(x_train, y_train, x_test, y_test):
@@ -354,7 +354,7 @@ def ejercicio2(x_train, y_train, x_test, y_test):
         },
     ]
     train_many_and_plot(x_train, y_train, x_test, y_test, configs, title="2x128 Sigmoid, variando BS",
-                              save_file_name="comp_2x128_Sigm_BS.pdf",repetitions=3)
+                              save_file_name="comp_2x128_Sigm_BS.pdf",repetitions=1)
 
     configs = [
         {
@@ -409,13 +409,22 @@ def ejercicio2(x_train, y_train, x_test, y_test):
         },
     ]
     train_many_and_plot(x_train, y_train, x_test, y_test, configs, title="2x128 Sigmoid, variando LR",
-                              save_file_name="comp_2x128_Sigm_LR.pdf",repetitions=3)
+                              save_file_name="comp_2x128_Sigm_LR.pdf",repetitions=1)
 
 #Funcion para construir lauers
 def construir_capas(num_capas, activacion, neuronas=128):
     layers =[("Flaten",)]
     for _ in range(num_capas):
         layers.append(("Dense", neuronas))
+        layers.append((activacion,))
+    return layers
+
+def construir_capas_BN(num_capas, activacion, neuronas=128):
+    layers =[("Flaten",)]
+    for i in range(num_capas):
+        layers.append(("Dense", neuronas))
+        if(i+1 < num_capas):
+            layers.append(("BN",))
         layers.append((activacion,))
     return layers
 
@@ -449,9 +458,52 @@ def ejercicio3(x_train, y_train, x_test, y_test):
     
 
         train_many_and_plot(x_train, y_train, x_test, y_test, configs, title=f"{num_capas}x128 Diferntes activaciones",
-                                        save_file_name=f"comp_{num_capas}x128_Activaciones.pdf",repetitions=3)
+                                        save_file_name=f"comp_{num_capas}x128_Activaciones.pdf",repetitions=1)
 
 
+def ejercicio4(x_train, y_train, x_test, y_test):
+    activaciones_8 = [
+        ("sigmoid", "glorot_normal", [0, 1]),
+        ("tanh", "glorot_normal", [-1, 1]),
+        ("relu", "he_normal",     [-2, 2]),
+        ("gelu", "he_normal",     [-2, 2]),
+    ]
+    
+    
+    configs_8=[]
+    
+    for nombre, inicializador, escalado in activaciones_8:
+            configs_8.append({
+                "layers": construir_capas_BN(8,nombre),
+                "scaling": escalado,
+                "kernel_initializer" : inicializador,
+                "batch_size" : 512,
+                "learning_rate": 0.001,
+                "epochs" : 100,
+                "patience" : 10,
+                "label" : nombre,
+                "fig_file_name": f"8x128_{nombre}_BN.pdf",
+            }),
+                
+    train_many_and_plot(x_train, y_train, x_test, y_test, configs_8, title="8x128 Diferntes activaciones con BN",
+                                        save_file_name="comp_8x128_Activaciones_BN.pdf",repetitions=1)
+    configs_2 = [
+        {
+            "layers": construir_capas_BN(2, "relu"),
+            "scaling": [-2, 2],
+            "kernel_initializer": "he_normal",
+            "batch_size": 512,
+            "learning_rate": 0.001,
+            "epochs": 100,
+            "patience": 10,
+            "label": "relu_2x128+BN",
+            "fig_file_name": "2x128_relu_BN.pdf",
+        }
+    ]
+    train_many_and_plot(x_train, y_train, x_test, y_test, configs_2, title="2x128 ReLu con BN",
+                                        save_file_name="comp_2x128_Activaciones_BN.pdf",repetitions=1)
+
+    
 if __name__ == "__main__":
 
     (x_train, y_train), (x_test, y_test) = load_cifar10()
@@ -462,5 +514,6 @@ if __name__ == "__main__":
     # Sin embargo, ejercicio2() es solo una sugerencia de lo que se puede probar
     # y los modelos que prueba son ilustrativos de los que se pueden explorar
     #ejercicio2(x_train, y_train, x_test, y_test)
-    ejercicio3(x_train, y_train, x_test, y_test)
+    #ejercicio3(x_train, y_train, x_test, y_test)
+    ejercicio4(x_train, y_train, x_test, y_test)
 
